@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>If & Although RPG Battle</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+  font-family: 'Arial', sans-serif;
+  overflow: hidden;
+}
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 20px;
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
+}
+
+button {
+  font-size: 18px;
+  padding: 12px 24px;
+  margin: 8px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+#start h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+#start p {
+  font-size: 18px;
+  margin: 10px 0;
+  color: #aaa;
+}
+
+.guide-box {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #667eea;
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 20px;
+  max-width: 500px;
+  text-align: left;
+}
+
+.guide-box ul {
+  list-style: none;
+}
+
+.guide-box li {
+  padding: 8px 0;
+  font-size: 16px;
+  border-bottom: 1px solid #444;
+}
+
+.guide-box li:before {
+  content: "✓ ";
+  color: #667eea;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+#game {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  height: 100vh;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.panel {
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid #667eea;
+  border-radius: 15px;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+}
+
+.panel h2 {
+  font-size: 28px;
+  margin-bottom: 15px;
+  color: #667eea;
+  text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+}
+
+.card {
+  background: rgba(50, 50, 80, 0.5);
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+  font-size: 14px;
+}
+
+.card.hp-low {
+  border-left-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+.hp-bar {
+  width: 100%;
+  height: 20px;
+  background: #333;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 5px 0;
+  border: 1px solid #667eea;
+}
+
+.hp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  width: 100%;
+  transition: width 0.3s ease;
+}
+
+.hp-fill.danger {
+  background: linear-gradient(90deg, #ff6b6b 0%, #ee5a6f 100%);
+}
+
+.question-box {
+  background: rgba(0, 0, 0, 0.8);
+  padding: 15px;
+  border-radius: 10px;
+  margin: 10px 0;
+  font-size: 16px;
+  font-weight: bold;
+  border: 2px solid #764ba2;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.answer-display {
+  background: #000;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 10px 0;
+  min-height: 40px;
+  border: 2px solid #333;
+  color: #667eea;
+  font-weight: bold;
+}
+
+.answer-display.empty {
+  color: #888;
+  font-style: italic;
+}
+
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.choice {
+  background: rgba(102, 126, 234, 0.2);
+  border: 2px solid #667eea;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.choice:hover {
+  background: rgba(102, 126, 234, 0.4);
+  transform: scale(1.05);
+}
+
+.choice.selected {
+  background: #667eea;
+  color: #fff;
+  box-shadow: 0 0 15px rgba(102, 126, 234, 0.8);
+}
+
+.button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.button-group button {
+  margin: 0;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.topbar {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
+  display: flex;
+  gap: 8px;
+}
+
+.topbar button {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+#end h1 {
+  font-size: 44px;
+  margin-bottom: 30px;
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+}
+
+.result-box {
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid #ffd700;
+  border-radius: 15px;
+  padding: 30px;
+  margin: 20px 0;
+  max-width: 600px;
+  box-shadow: 0 8px 32px rgba(255, 215, 0, 0.2);
+}
+
+.result-box h2 {
+  color: #667eea;
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #444;
+  font-size: 16px;
+}
+
+.result-item span:first-child {
+  color: #aaa;
+}
+
+.result-item span:last-child {
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.winner {
+  font-size: 32px;
+  color: #ffd700;
+  margin: 20px 0;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+@media (max-width: 900px) {
+  #game {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  #start h1 {
+    font-size: 36px;
+  }
+  
+  .choices {
+    grid-template-columns: 1fr;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #764ba2;
+}
+
+</style>
+</head>
+<body>
+
+<div id="start" class="screen">
+  <h1>⚔️ If & Although RPG Battle ⚔️</h1>
+  <p>雙人對戰模式：騎士 VS 法師</p>
+  <p>答對攻擊怪獸，答錯扣玩家HP</p>
+  <p>連續3題正確獲得獎勵加成！</p>
+  <button onclick="toggleGuide()">📖 遊戲說明</button>
+  <div id="guide" class="guide-box hidden">
+    <h3 style="color: #667eea; margin-bottom: 15px;">⚙️ 遊戲說明</h3>
+    <ul>
+      <li>每位玩家轉流答題</li>
+      <li>點選答案後按「確定」提交</li>
+      <li>按「取消」可重新選擇</li>
+      <li>答對 → 攻擊怪獸 (-15傷害)</li>
+      <li>答錯 → 玩家失血 (-10 HP)</li>
+      <li>怪獸血量低於 0 時會重生</li>
+      <li>連擊達 3 次 → 傷害+25，回血 +10</li>
+      <li>任一玩家 HP ≤ 0 或 30 題結束 → 遊戲終止</li>
+    </ul>
+  </div>
+  <button onclick="startGame()" style="margin-top: 20px; font-size: 22px; padding: 15px 30px;">🎮 開始遊戲</button>
+</div>
+
+<div class="topbar hidden" id="topbar">
+  <button onclick="toggleMute()" id="muteBtn">🔊 音效</button>
+  <button onclick="goFull()">⛶ 全螢幕</button>
+</div>
+
+<div id="game" class="hidden"></div>
+
+<div id="end" class="screen hidden">
+  <h1>🏆 遊戲結束 🏆</h1>
+  <div id="result"></div>
+  <button onclick="location.reload()" style="margin-top: 20px;">🔄 重新開始</button>
+</div>
+
+<script>
+const questions = [
+  {q: "___ it rains, we will stay home.", a: "if"},
+  {q: "___ he was tired, he finished the work.", a: "although"},
+  {q: "If she ___ (study) hard, she will pass.", a: "studies"},
+  {q: "Although they ___ (be) young, they are responsible.", a: "are"},
+  {q: "___ you hurry, you can catch the bus.", a: "if"},
+  {q: "___ it was cold, we went hiking.", a: "although"},
+  {q: "If Tom ___ (have) time, he will help.", a: "has"},
+  {q: "Although Mary ___ (like) math, she finds it difficult.", a: "likes"},
+  {q: "___ I see him, I will tell him.", a: "if"},
+  {q: "___ she was sick, she came to school.", a: "although"},
+  {q: "If it ___ (not/rain), we will play.", a: "doesn't rain"},
+  {q: "Although he ___ (be) rich, he is kind.", a: "is"},
+  {q: "___ they practice, they will improve.", a: "if"},
+  {q: "___ she felt nervous, she spoke well.", a: "although"},
+  {q: "If Dad ___ (cook), we will eat early.", a: "cooks"},
+  {q: "Although the test ___ (be) hard, I passed.", a: "was"},
+  {q: "___ you call me, I will answer.", a: "if"},
+  {q: "___ he was busy, he helped us.", a: "although"},
+  {q: "If Amy ___ (finish) first, she can leave.", a: "finishes"},
+  {q: "Although we ___ (be) late, the show hadn't started.", a: "were"},
+  {q: "___ they win, they will celebrate.", a: "if"},
+  {q: "___ it looked dangerous, nobody got hurt.", a: "although"},
+  {q: "If Jack ___ (try), he can do it.", a: "tries"},
+  {q: "Although she ___ (have) little money, she was happy.", a: "had"},
+  {q: "___ I am free, I will join you.", a: "if"},
+  {q: "___ he failed, he didn't give up.", a: "although"},
+  {q: "If the dog ___ (see) us, it will bark.", a: "sees"},
+  {q: "Although they ___ (live) far away, they visit often.", a: "live"},
+  {q: "___ you study harder, your grades will improve.", a: "if"},
+  {q: "___ the movie was long, it was interesting.", a: "although"}
+];
+
+const choicePool = ["if", "although", "studies", "are", "has", "likes", "doesn't rain", "is", "cooks", "was", "finishes", "were", "tries", "had", "sees", "live"];
+
+let qIndex = 0;
+let mute = false;
+let gameOver = false;
+
+const players = [
+  {name: "⚔️ 騎士", hp: 100, mhp: 100, monster: 120, mmonster: 120, score: 0, combo: 0, correct: 0, wrong: 0, kills: 0, sel: ""},
+  {name: "🧙 法師", hp: 100, mhp: 100, monster: 120, mmonster: 120, score: 0, combo: 0, correct: 0, wrong: 0, kills: 0, sel: ""}
+];
+
+function render() {
+  const g = document.getElementById("game");
+  g.innerHTML = "";
+  const q = questions[qIndex % questions.length];
+  
+  players.forEach((p, i) => {
+    const hpPercent = (p.hp / p.mhp) * 100;
+    const monsterPercent = (p.monster / p.mmonster) * 100;
+    const hpFillClass = hpPercent < 30 ? "hp-fill danger" : "hp-fill";
+    const cardClass = hpPercent < 30 ? "card hp-low" : "card";
+    
+    g.innerHTML += `
+      <div class="panel">
+        <h2>${p.name}</h2>
+        
+        <div class="card">
+          玩家 HP: ${p.hp} / ${p.mhp}
+          <div class="hp-bar">
+            <div class="hp-fill" style="width: ${Math.max(0, hpPercent)}%"></div>
+          </div>
+        </div>
+        
+        <div class="card">
+          怪獸 HP: ${p.monster} / ${p.mmonster}
+          <div class="hp-bar">
+            <div class="hp-fill" style="width: ${Math.max(0, monsterPercent)}%"></div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <span style="color: #ffd700;">⭐ 分數: ${p.score}</span> | 
+          <span style="color: #ff6b6b;">🔥 Combo: ${p.combo}</span>
+        </div>
+        
+        <div class="card">
+          ✓ 答對: ${p.correct} | ✗ 答錯: ${p.wrong} | 🎯 擊敗: ${p.kills}
+        </div>
+        
+        <div class="question-box">
+          <strong>Q${qIndex + 1}:</strong> ${q.q}
+        </div>
+        
+        <div class="answer-display ${p.sel ? '' : 'empty'}">
+          ${p.sel || '➜ 請選擇答案'}
+        </div>
+        
+        <div class="choices">
+          ${choicePool.map(x => `
+            <div class="choice ${p.sel === x ? 'selected' : ''}" onclick="pick(${i}, '${x}')">${x}</div>
+          `).join("")}
+        </div>
+        
+        <div class="button-group">
+          <button onclick="cancelAns(${i})">🔄 取消</button>
+          <button onclick="submitAns(${i})">✓ 確定</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function pick(i, v) {
+  if (gameOver) return;
+  players[i].sel = v;
+  render();
+}
+
+function cancelAns(i) {
+  if (gameOver) return;
+  players[i].sel = "";
+  render();
+}
+
+function submitAns(i) {
+  if (gameOver) return;
+  
+  const p = players[i];
+  const q = questions[qIndex % questions.length];
+  
+  if (!p.sel) return;
+
+  if (p.sel.toLowerCase() === q.a.toLowerCase()) {
+    beep(700, 0.1);
+    p.correct++;
+    p.combo++;
+    p.score += 10;
+    
+    let dmg = 15;
+    if (p.combo >= 3) {
+      dmg = 25;
+      p.hp = Math.min(p.mhp, p.hp + 10);
+      beep(900, 0.2);
+    }
+    p.monster -= dmg;
+    if (p.monster <= 0) {
+      p.kills++;
+      p.monster = p.mmonster;
+      p.score += 20;
+      beep(1200, 0.15);
+    }
+  } else {
+    beep(250, 0.15);
+    p.wrong++;
+    p.combo = 0;
+    p.hp -= 10;
+  }
+  
+  p.sel = "";
+  qIndex++;
+  
+  if (players.some(x => x.hp <= 0) || qIndex >= 30) {
+    endGame();
+  } else {
+    render();
+  }
+}
+
+function beep(freq, duration = 0.1) {
+  if (mute) return;
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = freq;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + duration);
+  } catch (e) {
+    console.log("Audio not supported");
+  }
+}
+
+function startGame() {
+  document.getElementById("start").classList.add("hidden");
+  document.getElementById("game").classList.remove("hidden");
+  document.getElementById("topbar").classList.remove("hidden");
+  gameOver = false;
+  render();
+}
+
+function toggleGuide() {
+  document.getElementById("guide").classList.toggle("hidden");
+}
+
+function toggleMute() {
+  mute = !mute;
+  document.getElementById("muteBtn").textContent = mute ? "🔇 靜音" : "🔊 音效";
+}
+
+function goFull() {
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen();
+  } else if (document.documentElement.webkitRequestFullscreen) {
+    document.documentElement.webkitRequestFullscreen();
+  }
+}
+
+function endGame() {
+  gameOver = true;
+  document.getElementById("game").classList.add("hidden");
+  document.getElementById("end").classList.remove("hidden");
+  
+  const winner = players[0].hp > players[1].hp ? 0 : (players[1].hp > players[0].hp ? 1 : -1);
+  
+  let html = winner !== -1 ? `<div class="winner">🎊 ${players[winner].name} 獲勝！🎊</div>` : `<div class="winner">⚖️ 平手！</div>`;
+  
+  players.forEach(p => {
+    html += `
+      <div class="result-box">
+        <h2>${p.name}</h2>
+        <div class="result-item"><span>最終HP:</span> <span>${Math.max(0, p.hp)}</span></div>
+        <div class="result-item"><span>總分數:</span> <span>${p.score}</span></div>
+        <div class="result-item"><span>答對題數:</span> <span>${p.correct}</span></div>
+        <div class="result-item"><span>答錯題數:</span> <span>${p.wrong}</span></div>
+        <div class="result-item"><span>擊敗怪獸:</span> <span>${p.kills} 次</span></div>
+        <div class="result-item"><span>最高連擊:</span> <span>${p.combo}</span></div>
+      </div>
+    `;
+  });
+  
+  document.getElementById("result").innerHTML = html;
+}
+
+// 初始化
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.fullscreenElement) {
+    document.exitFullscreen();
+  }
+});
+</script>
+
+</body>
+</html>
